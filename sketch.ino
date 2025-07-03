@@ -1,0 +1,63 @@
+#include <Arduino.h>
+
+// กำหนดขา GPIO ของ ESP32 ที่เชื่อมต่อกับแต่ละ Segment ของ 7-segment display
+// ตามข้อมูลการเชื่อมต่อที่คุณให้มา
+const int SEG_A = 19;
+const int SEG_B = 18;
+const int SEG_C = 5;
+const int SEG_D = 17;
+const int SEG_E = 16;
+const int SEG_F = 4;
+const int SEG_G = 2;
+
+// สร้างอาเรย์เพื่อเก็บขา Segment ทั้งหมด
+const int segmentPins[] = {SEG_A, SEG_B, SEG_C, SEG_D, SEG_E, SEG_F, SEG_G};
+const int NUM_SEGMENTS = sizeof(segmentPins) / sizeof(segmentPins[0]);
+
+// กำหนดรูปแบบของแต่ละตัวเลข (0-9) สำหรับ 7-segment display แบบ Common Anode
+// โดยที่ LOW คือปิด Segment และ HIGH คือเปิด Segment
+// ลำดับ: A, B, C, D, E, F, G
+const byte numberPatterns[10][7] = {
+  //   A  B  C  D  E  F  G
+  { HIGH,HIGH,HIGH,HIGH,HIGH,HIGH,LOW }, // 0
+  { LOW,HIGH,HIGH,LOW,LOW,LOW,LOW }, // 1
+  { HIGH,HIGH,LOW,HIGH,HIGH,LOW,HIGH }, // 2
+  { HIGH,HIGH,HIGH,HIGH,LOW,LOW,HIGH }, // 3
+  { LOW,HIGH,HIGH,LOW,LOW,HIGH,HIGH }, // 4
+  { HIGH,LOW,HIGH,HIGH,LOW,HIGH,HIGH }, // 5
+  { HIGH,LOW,HIGH,HIGH,HIGH,HIGH,HIGH }, // 6
+  { HIGH,HIGH,HIGH,LOW,LOW,LOW,LOW }, // 7
+  { HIGH,HIGH,HIGH,HIGH,HIGH,HIGH,HIGH }, // 8
+  { HIGH,HIGH,HIGH,HIGH,LOW,HIGH,HIGH }  // 9
+};
+
+// --- setup() function ---
+// ทำงานเพียงครั้งเดียวเมื่อ ESP32 เริ่มต้นหรือรีเซ็ต
+void setup() {
+  // กำหนดขา Segment ทั้งหมดให้เป็น OUTPUT
+  for (int i = 0; i < NUM_SEGMENTS; i++) {
+    pinMode(segmentPins[i], OUTPUT);
+  }
+}
+
+// --- displayDigit() function ---
+// ฟังก์ชันสำหรับแสดงตัวเลขบน 7-segment display
+// digit: ตัวเลขที่ต้องการแสดง (0-9)
+void displayDigit(int digit) {
+  if (digit >= 0 && digit <= 9) {
+    for (int i = 0; i < NUM_SEGMENTS; i++) {
+      digitalWrite(segmentPins[i], numberPatterns[digit][i]);
+    }
+  }
+}
+
+// --- loop() function ---
+// ทำงานซ้ำๆ ตลอดไป
+void loop() {
+  // วนลูปแสดงตัวเลข 0 ถึง 9
+  for (int i = 0; i <= 9; i++) {
+    displayDigit(i); // แสดงตัวเลขปัจจุบัน
+    delay(1000);     // หน่วงเวลา 1 วินาที (1000 มิลลิวินาที) ก่อนแสดงตัวเลขถัดไป
+  }
+}
+
